@@ -1,0 +1,3 @@
+Package: src:zfs-linux
+Pin: release n=bullseye-backports
+Pin-Priority: 990
