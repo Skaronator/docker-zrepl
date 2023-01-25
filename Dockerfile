@@ -29,7 +29,4 @@ RUN \
   apt install -y zrepl && \
   rm -rf /var/lib/apt/lists/*
 
-
-RUN /sbin/modprobe zfs
-
-CMD [ "/bin/bash" ]
+CMD [ "/usr/bin/zrepl" ]
