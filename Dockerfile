@@ -27,6 +27,9 @@ RUN \
   # Update apt repos.
   apt update && \
   apt install -y zrepl && \
+  # aditional docker tweaks
+  mkdir -p /var/run/zrepl/stdinserver && \
+  chmod -R 0700 /var/run/zrepl && \
   rm -rf /var/lib/apt/lists/*
 
 CMD [ "/usr/bin/zrepl" ]
