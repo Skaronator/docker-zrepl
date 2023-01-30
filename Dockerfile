@@ -24,6 +24,6 @@ RUN set -eux && \
 
 CMD ["daemon"]
 ENTRYPOINT ["/usr/bin/zrepl", "--config", "/etc/zrepl/zrepl.yml"]
-STOPSIGNAL SIGTERM
+
 VOLUME /etc/zrepl
 WORKDIR "/etc/zrepl"
