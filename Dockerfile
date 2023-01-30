@@ -2,34 +2,28 @@ FROM debian:bullseye
 
 COPY ./data/backports.list /etc/apt/sources.list.d/bullseye-backports.list
 COPY ./data/apt-preferences /etc/apt/preferences.d/90_zfs
-  
-RUN \
-  DEBIAN_FRONTEND=noninteractive && \
-  apt update && \
-  apt install -y dpkg-dev linux-headers-generic linux-image-generic && \
-  apt install -y zfs-dkms zfsutils-linux && \
-  rm -rf /var/lib/apt/lists/*
 
-RUN \
-  DEBIAN_FRONTEND=noninteractive && \
-  zrepl_apt_key_url=https://zrepl.cschwarz.com/apt/apt-key.asc && \
-  zrepl_apt_key_dst=/usr/share/keyrings/zrepl.gpg && \
-  zrepl_apt_repo_file=/etc/apt/sources.list.d/zrepl.list && \
-  # Install dependencies for subsequent commands
-  sudo apt update && sudo apt install -y curl gnupg lsb-release && \
-  # Deploy the zrepl apt key.
-  curl -fsSL "$zrepl_apt_key_url" | tee | gpg --dearmor | sudo tee "$zrepl_apt_key_dst" > /dev/null && \
-  # Add the zrepl apt repo.
-  ARCH="$(dpkg --print-architecture)" && \
-  CODENAME="$(lsb_release -i -s | tr '[:upper:]' '[:lower:]') $(lsb_release -c -s | tr '[:upper:]' '[:lower:]')" && \
-  echo "Using Distro and Codename: $CODENAME" && \
-  echo "deb [arch=$ARCH signed-by=$zrepl_apt_key_dst] https://zrepl.cschwarz.com/apt/$CODENAME main" | sudo tee /etc/apt/sources.list.d/zrepl.list && \
-  # Update apt repos.
-  apt update && \
-  apt install -y zrepl && \
-  # aditional docker tweaks
-  mkdir -p /var/run/zrepl/stdinserver && \
-  chmod -R 0700 /var/run/zrepl && \
-  rm -rf /var/lib/apt/lists/*
+RUN set -eux && \
+    DEBIAN_FRONTEND=noninteractive \
+    # Add APT repositories
+    apt-get update && apt-get install --yes --no-install-recommends ca-certificates curl gnupg lsb-release && \
+    (curl -fsSL --insecure https://zrepl.cschwarz.com/apt/apt-key.asc | apt-key add -) && \
+    ( \
+      . /etc/os-release && \
+      ARCH="$(dpkg --print-architecture)" && \
+      echo "deb [arch=$ARCH] https://zrepl.cschwarz.com/apt/$ID $VERSION_CODENAME main" > /etc/apt/sources.list.d/zrepl.list && \
+      echo "deb http://deb.debian.org/$ID stable contrib" > /etc/apt/sources.list.d/stable-contrib.list \
+    ) && \
+    apt-get update && \
+    # Install zrepl and its user-land ZFS utils dependency
+    apt-get install --yes --no-install-recommends zrepl zfsutils-linux && \
+    # zrepl expects /var/run/zrepl
+    mkdir -p /var/run/zrepl && chmod 0700 /var/run/zrepl && \
+    # Reduce final Docker image size: Clear the APT cache
+    apt-get clean && rm -rf /var/lib/apt/lists/* # Remove unused packages and package cache
 
-CMD [ "/usr/bin/zrepl" ]
+CMD ["daemon"]
+ENTRYPOINT ["/usr/bin/zrepl", "--config", "/etc/zrepl/zrepl.yml"]
+STOPSIGNAL SIGTERM
+VOLUME /etc/zrepl
+WORKDIR "/etc/zrepl"
