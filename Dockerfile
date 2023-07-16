@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
 COPY ./data/backports.list /etc/apt/sources.list.d/bullseye-backports.list
 COPY ./data/apt-preferences /etc/apt/preferences.d/90_zfs
