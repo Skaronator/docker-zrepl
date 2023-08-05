@@ -1,7 +1,4 @@
-FROM debian:bullseye
-
-COPY ./data/backports.list /etc/apt/sources.list.d/bullseye-backports.list
-COPY ./data/apt-preferences /etc/apt/preferences.d/90_zfs
+FROM debian:12.1
 
 RUN set -eux && \
     DEBIAN_FRONTEND=noninteractive \
@@ -11,8 +8,17 @@ RUN set -eux && \
     ( \
       . /etc/os-release && \
       ARCH="$(dpkg --print-architecture)" && \
-      echo "deb [arch=$ARCH] https://zrepl.cschwarz.com/apt/$ID $VERSION_CODENAME main" > /etc/apt/sources.list.d/zrepl.list && \
-      echo "deb http://deb.debian.org/$ID stable contrib" > /etc/apt/sources.list.d/stable-contrib.list \
+      # TODO: Replace "bullseye" with $VERSION_CODENAME
+      # once https://github.com/zrepl/zrepl/issues/721 was fixed
+      echo "deb [arch=$ARCH] https://zrepl.cschwarz.com/apt/$ID bullseye main" > /etc/apt/sources.list.d/zrepl.list && \
+      echo "deb http://deb.debian.org/$ID stable contrib" > /etc/apt/sources.list.d/stable-contrib.list && \
+      # Add Backports
+      echo "deb http://deb.debian.org/debian $VERSION_CODENAME-backports main contrib" >> /etc/apt/sources.list.d/backports.list && \
+      echo "deb-src http://deb.debian.org/debian $VERSION_CODENAME-backports main contrib" >> /etc/apt/sources.list.d/backports.list && \
+      # Pin ZFS Backports
+      echo "Package: src:zfs-linux" >> /etc/apt/preferences.d/90_zfs && \
+      echo "Pin: release n=$VERSION_CODENAME-backports" >> /etc/apt/preferences.d/90_zfs && \
+      echo "Pin-Priority: 990" >> /etc/apt/preferences.d/90_zfs \
     ) && \
     apt-get update && \
     # Install zrepl and its user-land ZFS utils dependency
@@ -20,7 +26,10 @@ RUN set -eux && \
     # zrepl expects /var/run/zrepl
     mkdir -p /var/run/zrepl && chmod 0700 /var/run/zrepl && \
     # Reduce final Docker image size: Clear the APT cache
-    apt-get clean && rm -rf /var/lib/apt/lists/* # Remove unused packages and package cache
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    # check versions
+    zrepl version 2>/dev/null || true && \
+    zfs --version 2>/dev/null || true
 
 CMD ["daemon"]
 ENTRYPOINT ["/usr/bin/zrepl", "--config", "/etc/zrepl/zrepl.yml"]
