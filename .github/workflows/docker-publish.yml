@@ -58,4 +58,4 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - uses: gautamkrishnar/keepalive-workflow@v1
+    - uses: gautamkrishnar/keepalive-workflow@v2
