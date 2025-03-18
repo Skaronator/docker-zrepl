@@ -1,4 +1,4 @@
-FROM debian:12.8
+FROM debian:12.10
 
 RUN set -eux && \
     DEBIAN_FRONTEND=noninteractive \
