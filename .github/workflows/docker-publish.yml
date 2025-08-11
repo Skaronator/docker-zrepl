@@ -20,7 +20,7 @@ jobs:
       id-token: write
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Log into Docker Hub registry
       if: github.event_name != 'pull_request'
