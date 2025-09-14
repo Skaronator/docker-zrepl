@@ -34,5 +34,4 @@ RUN set -eux && \
 CMD ["daemon"]
 ENTRYPOINT ["/usr/bin/zrepl", "--config", "/etc/zrepl/zrepl.yml"]
 
-VOLUME /etc/zrepl
-WORKDIR "/etc/zrepl"
+WORKDIR /etc/zrepl
