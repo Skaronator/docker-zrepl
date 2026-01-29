@@ -61,12 +61,15 @@ jobs:
         uses: docker/metadata-action@v5.10.0
         with:
           images: |
-            ghcr.io/${{ github.repository }}/zrepl
+            ghcr.io/${{ github.actor }}/zrepl
             ${{ secrets.DOCKERHUB_USERNAME }}/zrepl
           labels: |
             org.opencontainers.image.title=zrepl
             org.opencontainers.image.description=One-stop ZFS backup & replication solution
-            org.opencontainers.image.vendor=${{ github.repository }}
+            org.opencontainers.image.vendor=${{ github.actor }}
+          tags: |
+            ${{ env.ZREPL_VERSION }}
+            latest
 
       - name: Build and push Docker image
         id: build-and-push
