@@ -1,4 +1,4 @@
-FROM debian:13.1
+FROM debian:13.1-slim
 
 RUN set -euxo pipefail && \
     DEBIAN_FRONTEND=noninteractive && \
