@@ -1,5 +1,7 @@
 # zrepl Docker Container Image
 
+> **No longer maintained:** This repository and its container images are no longer maintained. Newer images are available from my other GitHub organization at [tuxcrate/zrepl](https://github.com/tuxcrate/zrepl).
+
 One-stop ZFS backup & replication solution
 
 [https://github.com/zrepl/zrepl](https://github.com/zrepl/zrepl)
